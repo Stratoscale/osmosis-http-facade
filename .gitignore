@@ -1,0 +1,8 @@
+*.egg-info
+.python-version
+*.pyc
+.tox
+AUTHORS
+ChangeLog
+dist
+.eggs
