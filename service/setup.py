@@ -25,6 +25,5 @@ except ImportError:
     pass
 
 setuptools.setup(
-    install_requires=['Flask'],
     setup_requires=['pbr>=1.10'],
     pbr=True)
