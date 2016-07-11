@@ -25,5 +25,8 @@ except ImportError:
     pass
 
 setuptools.setup(
-    setup_requires=['pbr>=1.10'],
-    pbr=True)
+    **util.cfg_to_args())
+
+#setuptools.setup(
+#    setup_requires=['pbr>=1.10'],
+#    pbr=True)
