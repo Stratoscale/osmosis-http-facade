@@ -11,8 +11,10 @@ all: sdist
 pip:
 	pip install -r requirements.txt
 
-dist:
-	make -f Makefile pip
+dist: pip
+
+sdist: clean
+	python setup.py sdist --formats=gztar
 
 sdist: clean
 	python setup.py sdist --formats=gztar
@@ -35,7 +37,7 @@ test-install:
 ######################################################################
 
 pip-upload: clean
-	python setup.py sdist --format=gztar,zip upload -r local
+	python setup.py sdist --format=gztar upload -r local
 
 pip-register:
 	python setup.py register -r local
