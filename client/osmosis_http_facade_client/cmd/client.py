@@ -6,7 +6,6 @@ import tarfile
 import tempfile
 import subprocess
 import argparse
-from git import Repo
 
 
 class Osmosis(object):
@@ -41,8 +40,8 @@ class Osmosis(object):
                             help='The repository name.')
         parser.add_argument('-q', '--quality', dest='quality', action='store', required=True,
                             help='clean/dirty etc...')
-        parser.add_argument('-a', "--address", dest='address', action='store', default="osmosis.dc1:1010",
-                            help='the osmosis service address')
+        parser.add_argument('-a', "--address", dest='address', action='store', default="osmosis.dc1:8080",
+                            help='the osmosis wrapper service address')
         self.args = parser.parse_args(sys.argv[2:])
     
     def bring(self):
@@ -55,8 +54,8 @@ class Osmosis(object):
                             help='The repository name.')
         parser.add_argument('-q', '--quality', dest='quality', action='store', required=True,
                             help='clean/dirty etc...')
-        parser.add_argument('-a', "--address", dest='address', action='store', default="osmosis.dc1:1010",
-                            help='the osmosis service address.')
+        parser.add_argument('-a', "--address", dest='address', action='store', default="osmosis.dc1:8080",
+                            help='the osmosis wrapper service address.')
         self.args = parser.parse_args(sys.argv[2:])
 
     def bringlabel(self):
@@ -65,16 +64,16 @@ class Osmosis(object):
                             help='output directory')
         parser.add_argument('-l', '--label', dest='label', action='store', required=True,
                             help='the label to store/retrive.')
-        parser.add_argument('-a', "--address", dest='address', action='store', default="osmosis.dc1:1010",
-                            help='the osmosis service address.')
+        parser.add_argument('-a', "--address", dest='address', action='store', default="osmosis.dc1:8080",
+                            help='the osmosis wrapper service address.')
         self.args = parser.parse_args(sys.argv[2:])
 
     def eraselabel(self):
         parser = argparse.ArgumentParser(description='eraselabel')
         parser.add_argument('-l', '--label', dest='label', action='store', required=True,
                             help='the label to store/retrive.')
-        parser.add_argument('-a', "--address", dest='address', action='store', default="osmosis.dc1:1010",
-                            help='the osmosis service address.')
+        parser.add_argument('-a', "--address", dest='address', action='store', default="osmosis.dc1:8080",
+                            help='the osmosis wrapper service address.')
         self.args = parser.parse_args(sys.argv[2:])
 
 
@@ -92,14 +91,15 @@ class Client():
 
     @staticmethod
     def _create_label(base_repo, product, quality):
-        #repo = Repo(search_parent_directories=True)
-        #sha = repo.head.object.hexsha
-        sha = "1111"
-        return "solvent__{base_repo}__{product}__{git_hash}__{quality}".format(
+        command = "git rev-parse HEAD"
+        sha = subprocess.check_output(command, shell=True)
+        label = "solvent__{base_repo}__{product}__{sha}__{quality}".format(
             base_repo=base_repo,
             product=product,
-            git_hash=sha,
+            sha=sha.rstrip(),
             quality=quality)
+        label = label.replace("-", "_")
+        return label
 
     @staticmethod
     def make_tarfile(output_filename, source_dir):
