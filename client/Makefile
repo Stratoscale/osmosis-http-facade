@@ -35,7 +35,7 @@ test-install:
 ######################################################################
 
 pip-upload: clean
-	python setup.py sdist --format=gztar,zip upload -r local
+	python setup.py sdist --format=gztar upload -r local
 
 pip-register:
 	python setup.py register -r local

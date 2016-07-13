@@ -12,7 +12,7 @@ from werkzeug import secure_filename
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "/tmp/osmosis_facade/cache"
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # These are the extension that we are accepting to be uploaded
 app.config['ALLOWED_EXTENSIONS'] = set(['tar.gz', "gz"])
