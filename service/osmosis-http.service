@@ -1,0 +1,16 @@
+[Unit]
+Description=Wrapper for osmosis service.
+After=syslog.target network.target
+
+[Service]
+Type=forking
+PIDFile=/var/osmosis-http-facade.pid
+# EnvironmentFile=-/etc/sysconfig/network
+# ExecStartPre=-/usr/libexec/postfix/aliasesdb
+# ExecStartPre=-/usr/libexec/postfix/chroot-update
+ExecStart=/home/strato/osmosis-http-facade-service-venv/bin/osmosis-http-service --address=0.0.0.0:8080
+ExecReload=/home/strato/osmosis-http-facade-service-venv/bin/osmosis-http-service reload
+ExecStop=/home/strato/osmosis-http-facade-service-venv/bin/osmosis-http-service stop
+
+[Install]
+WantedBy=multi-user.target
