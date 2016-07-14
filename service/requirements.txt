@@ -5,3 +5,5 @@ PyYAML
 # server
 Flask
 daemonocle
+aiohttp
+cchardet

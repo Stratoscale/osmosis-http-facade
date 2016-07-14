@@ -2,7 +2,8 @@ import argparse
 import sys
 import logging
 import daemonocle
-import osmosis_http_facade_service.http_service as http_service
+# import osmosis_http_facade_service.http_service as http_service
+import osmosis_http_facade_service.service as http_service
 
 
 class Cmd(object):
@@ -52,7 +53,6 @@ CMD_OPTIONS = None
 
 def run():
     logging.info('Daemon is starting')
-    import pdb;pdb.set_trace()
     service = http_service.Service(CMD_OPTIONS.args.address)
     service.run()
 
