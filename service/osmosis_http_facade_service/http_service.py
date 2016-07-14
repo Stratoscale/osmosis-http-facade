@@ -45,77 +45,82 @@ def mkdir_p(pathname):
             raise
 
 
-#mkdir_p(http_service.app.config['UPLOAD_FOLDER'])
-
 def make_tarfile(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname="")
         #tar.add(source_dir, arcname=os.path.basename(source_dir))
 
 
-# For a given file, return whether it's an allowed type or not
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in app.config['ALLOWED_EXTENSIONS']
+class Service(object):
+    def __init__(self, address):
+        self.address = address
 
+    def run(self):
+        ip, port = self.address.split(':')
+        app.run(host=ip, port=int(port), debug=True, use_reloader=True)
 
-@app.route('/labels/<string:label>', methods=['DELETE'])
-def delete_label(label):
-    try:
-        command = "osmosis eraselabel --objectStores=osmosis.dc1:1010 {label}".format(label=label)
-        response = subprocess.check_call(command, shell=True, stdout=sys.stdout, stderr=sys.stderr)
-        logger.debug(command, response)
-        return Response(response={"status": "deleted"},
-                        status=200,
-                        mimetype="application/json")
-    except:
-        error = {"message": "Error in osmosis server.", "command": command}
-        return Response(response=error,
-                        status=400,
-                        mimetype="application/json")
-
-@app.route('/labels/<string:label>', methods=['GET'])
-def download_file(label):
-    try:
-        temp_dir = tempfile.mkdtemp(prefix='osmosis_facade_')
+    # For a given file, return whether it's an allowed type or not
+    def allowed_file(filename):
+        return '.' in filename and \
+               filename.rsplit('.', 1)[1] in app.config['ALLOWED_EXTENSIONS']
     
-        command = "osmosis checkout --objectStores=osmosis.dc1:1010 {path} {label}".format(path=temp_dir, label=label)
-        response = subprocess.check_call(command, shell=True, stdout=sys.stdout, stderr=sys.stderr)
-        archive_file_name = "{label}.tar.gz".format(label=label)
-        archive = os.path.join(temp_dir, archive_file_name)
-        make_tarfile(archive, temp_dir)
-        logger.debug("created archive: %s, temp_dir: %s", archive, temp_dir)
-        res = send_file(archive)
-    finally:
-        shutil.rmtree(temp_dir)
-    return res
-
-
-@app.route('/labels/<string:label>', methods=['POST'])
-def upload_file(label):
-    f = request.files['file']
-    if f and allowed_file(f.filename):
+    @app.route('/labels/<string:label>', methods=['DELETE'])
+    def delete_label(label):
         try:
-            filename = secure_filename(f.filename)
-            temp_dir = tempfile.mkdtemp(prefix='osmosis_facade_')
-            #archive=os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            archive=os.path.join(temp_dir, filename)
-            f.save(archive)
-            # untar to temp dir
-            logger.debug("archive: %s, temp_dir: %s, label: %s", archive, temp_dir, label)
-            retval = os.getcwd()
-            # Now change the directory
-            os.chdir( temp_dir )
-            with tarfile.open(archive) as tar:
-                tar.extractall()
-            os.chdir(retval)
-            os.remove(archive)
-            command = "osmosis checkin {path} --objectStores=osmosis.dc1:1010 {label}".format(path=temp_dir, label=label)
-            logger.debug(command)
+            command = "osmosis eraselabel --objectStores=osmosis.dc1:1010 {label}".format(label=label)
             response = subprocess.check_call(command, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+            logger.debug(command, response)
+            return Response(response={"status": "deleted"},
+                            status=200,
+                            mimetype="application/json")
+        except:
+            error = {"message": "Error in osmosis server.", "command": command}
+            return Response(response=error,
+                            status=400,
+                            mimetype="application/json")
+    
+    @app.route('/labels/<string:label>', methods=['GET'])
+    def download_file(label):
+        try:
+            temp_dir = tempfile.mkdtemp(prefix='osmosis_facade_')
+        
+            command = "osmosis checkout --objectStores=osmosis.dc1:1010 {path} {label}".format(path=temp_dir, label=label)
+            response = subprocess.check_call(command, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+            archive_file_name = "{label}.tar.gz".format(label=label)
+            archive = os.path.join(temp_dir, archive_file_name)
+            make_tarfile(archive, temp_dir)
+            logger.debug("created archive: %s, temp_dir: %s", archive, temp_dir)
+            res = send_file(archive)
         finally:
             shutil.rmtree(temp_dir)
-        # cleanup
-        return Response(response=filename,
-                        status=202,
-                        mimetype="application/json")
+        return res
+    
+    
+    @app.route('/labels/<string:label>', methods=['POST'])
+    def upload_file(label):
+        f = request.files['file']
+        if f and allowed_file(f.filename):
+            try:
+                filename = secure_filename(f.filename)
+                temp_dir = tempfile.mkdtemp(prefix='osmosis_facade_')
+                #archive=os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                archive=os.path.join(temp_dir, filename)
+                f.save(archive)
+                # untar to temp dir
+                logger.debug("archive: %s, temp_dir: %s, label: %s", archive, temp_dir, label)
+                retval = os.getcwd()
+                # Now change the directory
+                os.chdir( temp_dir )
+                with tarfile.open(archive) as tar:
+                    tar.extractall()
+                os.chdir(retval)
+                os.remove(archive)
+                command = "osmosis checkin {path} --objectStores=osmosis.dc1:1010 {label}".format(path=temp_dir, label=label)
+                logger.debug(command)
+                response = subprocess.check_call(command, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+            finally:
+                shutil.rmtree(temp_dir)
+            # cleanup
+            return Response(response=filename,
+                            status=202,
+                            mimetype="application/json")
