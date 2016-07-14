@@ -28,7 +28,13 @@ class Cmd(object):
         getattr(self, args.command)()
     
     def start(self):
-        parser = argparse.ArgumentParser(description='submit')
+        logging.info('parse start')
+        parser = argparse.ArgumentParser(description='start')
+        parser.add_argument("--debug",
+                            dest='debug',
+                            action='store',
+                            default=False,
+                            help='Run in debug mode.')
         parser.add_argument('-a', "--address",
                             dest='address',
                             action='store',
@@ -58,16 +64,22 @@ def run():
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
-    daemon = daemonocle.Daemon(
-        worker=run,
-        detach=False,
-        shutdown_callback=cb_shutdown,
-        pidfile='/tmp/osmosis-http.pid',
-        #pidfile='/var/run/osmosis-http.pid',
-    )
     global CMD_OPTIONS
     CMD_OPTIONS = Cmd()
+    debug = CMD_OPTIONS.args.debug
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+        
+    daemon = daemonocle.Daemon(
+        worker=run,
+        detach=not debug,
+        shutdown_callback=cb_shutdown,
+        pidfile='/tmp/osmosis-http.pid',
+        close_open_files=True,
+        #pidfile='/var/run/osmosis-http.pid',
+    )
     daemon.do_action(CMD_OPTIONS.command)
 
 

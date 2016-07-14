@@ -3,14 +3,21 @@ Description=Wrapper for osmosis service.
 After=syslog.target network.target
 
 [Service]
-Type=forking
-PIDFile=/var/osmosis-http-facade.pid
+Type=simple
+# PIDFile=/var/osmosis-http-facade.pid
+# Environment=VIRTUAL_ENV=/home/strato/.pyenv/versions/3.5.2/envs/osmosis-http-api-venv
 # EnvironmentFile=-/etc/sysconfig/network
 # ExecStartPre=-/usr/libexec/postfix/aliasesdb
-# ExecStartPre=-/usr/libexec/postfix/chroot-update
-ExecStart=/home/strato/osmosis-http-facade-service-venv/bin/osmosis-http-service --address=0.0.0.0:8080
-ExecReload=/home/strato/osmosis-http-facade-service-venv/bin/osmosis-http-service reload
-ExecStop=/home/strato/osmosis-http-facade-service-venv/bin/osmosis-http-service stop
+#/ ExecStartPre=-/usr/libexec/postfix/chroot-update
+
+
+# ExecStart=/home/strato/.pyenv/versions/3.5.2/envs/osmosis-http-api-venv/bin/python /home/strato/osmosis-http-facade/service/osmosis_http_facade_service/cmd/main.py start --address=0.0.0.0:8080
+# ExecReload=/home/strato/.pyenv/versions/3.5.2/envs/osmosis-http-api-venv/bin/python /home/strato/osmosis-http-facade/service/osmosis_http_facade_service/cmd/main.py reload
+# ExecStop=/home/strato/.pyenv/versions/3.5.2/envs/osmosis-http-api-venv/bin/python /home/strato/osmosis-http-facade/service/osmosis_http_facade_service/cmd/main.py stop
+
+ExecStart=/home/strato/.pyenv/versions/3.5.2/envs/osmosis-http-api-venv/bin/osmosis-http-service start --address=0.0.0.0:8080
+ExecReload=/home/strato/.pyenv/versions/3.5.2/envs/osmosis-http-api-venv/bin/osmosis-http-service reload
+ExecStop=/home/strato/.pyenv/versions/3.5.2/envs/osmosis-http-api-venv/bin/osmosis-http-service stop
 
 [Install]
 WantedBy=multi-user.target
